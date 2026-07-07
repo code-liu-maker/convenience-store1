@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lhs.mapper.SupplierMapper">
+
+    <resultMap id="BaseResultMap" type="com.lhs.model.Supplier">
+        <id column="supplier_id" property="supplierId"/>
+        <result column="supplier_name" property="supplierName"/>
+        <result column="contact_person" property="contactPerson"/>
+        <result column="contact_phone" property="contactPhone"/>
+        <result column="supply_category" property="supplyCategory"/>
+        <result column="cooperation_status" property="cooperationStatus"/>
+        <result column="address" property="address"/>
+        <result column="remark" property="remark"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        select * from tb_supplier order by create_time desc
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+        select * from tb_supplier where supplier_id = #{supplierId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="supplierId">
+        insert into tb_supplier(supplier_name, contact_person, contact_phone, supply_category,
+                                cooperation_status, address, remark, create_time)
+        values(#{supplierName}, #{contactPerson}, #{contactPhone}, #{supplyCategory},
+               #{cooperationStatus}, #{address}, #{remark}, now())
+    </insert>
+
+    <update id="update">
+        update tb_supplier
+        set supplier_name = #{supplierName}, contact_person = #{contactPerson},
+            contact_phone = #{contactPhone}, supply_category = #{supplyCategory},
+            cooperation_status = #{cooperationStatus}, address = #{address}, remark = #{remark}
+        where supplier_id = #{supplierId}
+    </update>
+
+    <delete id="deleteById">
+        delete from tb_supplier where supplier_id = #{supplierId}
+    </delete>
+
+    <select id="search" resultMap="BaseResultMap">
+        select * from tb_supplier
+        <where>
+            <if test="supplierName != null and supplierName != ''">
+                supplier_name like concat('%', #{supplierName}, '%')
+            </if>
+            <if test="supplyCategory != null and supplyCategory != ''">
+                and supply_category like concat('%', #{supplyCategory}, '%')
+            </if>
+        </where>
+        order by create_time desc limit #{offset}, #{pageSize}
+    </select>
+
+    <select id="countSearch" resultType="int">
+        select count(*) from tb_supplier
+        <where>
+            <if test="supplierName != null and supplierName != ''">
+                supplier_name like concat('%', #{supplierName}, '%')
+            </if>
+            <if test="supplyCategory != null and supplyCategory != ''">
+                and supply_category like concat('%', #{supplyCategory}, '%')
+            </if>
+        </where>
+    </select>
+</mapper>

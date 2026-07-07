@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lhs.mapper.ProductMapper">
+
+    <resultMap id="BaseResultMap" type="com.lhs.model.Product">
+        <id column="product_id" property="productId"/>
+        <result column="product_name" property="productName"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="price" property="price"/>
+        <result column="specification" property="specification"/>
+        <result column="product_image" property="productImage"/>
+        <result column="origin" property="origin"/>
+        <result column="remark" property="remark"/>
+        <result column="stock_quantity" property="stockQuantity"/>
+        <result column="stock_threshold" property="stockThreshold"/>
+        <result column="status" property="status"/>
+        <result column="supplier_id" property="supplierId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="BaseResultMap">
+        select * from tb_product where is_deleted = 0 order by create_time desc
+    </select>
+
+    <select id="findById" resultMap="BaseResultMap">
+        select * from tb_product where product_id = #{productId} and is_deleted = 0
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="productId">
+        insert into tb_product(product_name, category_id, price, specification, product_image,
+                               origin, remark, stock_quantity, stock_threshold, status, supplier_id, create_time, is_deleted)
+        values(#{productName}, #{categoryId}, #{price}, #{specification}, #{productImage},
+               #{origin}, #{remark}, #{stockQuantity}, #{stockThreshold}, #{status}, #{supplierId}, now(), 0)
+    </insert>
+
+    <update id="update">
+        update tb_product
+        set product_name = #{productName}, category_id = #{categoryId}, price = #{price},
+            specification = #{specification}, product_image = #{productImage}, origin = #{origin},
+            remark = #{remark}, stock_threshold = #{stockThreshold}, status = #{status}, supplier_id = #{supplierId}
+        where product_id = #{productId}
+    </update>
+
+    <update id="updateStock">
+        update tb_product set stock_quantity = stock_quantity + #{quantity} where product_id = #{productId}
+    </update>
+
+    <!-- 逻辑删除：把 is_deleted 设为 1，不真正删除数据 -->
+    <update id="deleteById">
+        update tb_product set is_deleted = 1 where product_id = #{productId}
+    </update>
+
+    <select id="findPage" resultMap="BaseResultMap">
+        select * from tb_product where is_deleted = 0 order by create_time desc limit #{offset}, #{pageSize}
+    </select>
+
+    <select id="countTotal" resultType="int">
+        select count(*) from tb_product where is_deleted = 0
+    </select>
+
+    <select id="search" resultMap="BaseResultMap">
+        select * from tb_product
+        <where>
+            is_deleted = 0
+            <if test="productName != null and productName != ''">
+                and product_name like concat('%', #{productName}, '%')
+            </if>
+            <if test="categoryId != null">
+                and category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+        order by create_time desc limit #{offset}, #{pageSize}
+    </select>
+
+    <select id="countSearch" resultType="int">
+        select count(*) from tb_product
+        <where>
+            is_deleted = 0
+            <if test="productName != null and productName != ''">
+                and product_name like concat('%', #{productName}, '%')
+            </if>
+            <if test="categoryId != null">
+                and category_id = #{categoryId}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="findLowStock" resultMap="BaseResultMap">
+        select * from tb_product where stock_quantity &lt; stock_threshold and status = 0 and is_deleted = 0
+    </select>
+
+</mapper>
